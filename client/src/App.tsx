@@ -13,10 +13,17 @@ import { useAuth } from "./_core/hooks/useAuth";
 import { getLoginUrl } from "./const";
 import { Loader2 } from "lucide-react";
 import { useLocation } from "wouter";
+import React from "react";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
+
+  React.useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      window.location.href = getLoginUrl();
+    }
+  }, [isAuthenticated, loading]);
 
   if (loading) {
     return (
@@ -30,20 +37,31 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   }
 
   if (!isAuthenticated) {
-    window.location.href = getLoginUrl();
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Redirection...</p>
+        </div>
+      </div>
+    );
   }
 
   return <Component />;
 }
 
+const ProtectedDashboard = () => <ProtectedRoute component={Dashboard} />;
+const ProtectedClientDetail = () => <ProtectedRoute component={ClientDetail} />;
+const ProtectedNouvelEntretien = () => <ProtectedRoute component={NouvelEntretien} />;
+const ProtectedDossierDetail = () => <ProtectedRoute component={DossierDetail} />;
+
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={() => <ProtectedRoute component={Dashboard} />} />
-      <Route path="/clients/:id" component={() => <ProtectedRoute component={ClientDetail} />} />
-      <Route path="/clients/:clientId/entretien" component={() => <ProtectedRoute component={NouvelEntretien} />} />
-      <Route path="/dossiers/:id" component={() => <ProtectedRoute component={DossierDetail} />} />
+      <Route path="/" component={ProtectedDashboard} />
+      <Route path="/clients/:id" component={ProtectedClientDetail} />
+      <Route path="/clients/:clientId/entretien" component={ProtectedNouvelEntretien} />
+      <Route path="/dossiers/:id" component={ProtectedDossierDetail} />
       <Route path="/login" component={Login} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

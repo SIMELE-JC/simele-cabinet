@@ -29,3 +29,9 @@
 - [x] Tests vitest backend (8 tests passés)
 - [x] Checkpoint final
 - [ ] Livraison utilisateur
+
+
+## Bugs à corriger
+- [x] Erreur React "removeChild" sur ClientDetail lors de l'accès à /clients/1 (déplacement redirection dans useEffect)
+- [x] Erreur React "removeChild" sur NouvelEntretien lors de l'accès à /clients/:clientId/entretien (déplacement redirection dans useEffect)
+- [x] Clés dupliquées dans le rendu des listes (suppression menuItems dupliqué)
