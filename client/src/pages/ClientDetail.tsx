@@ -51,6 +51,12 @@ export default function ClientDetail() {
   const clientId = parseInt(params.id ?? "0");
   const [, navigate] = useLocation();
   const [openSuivi, setOpenSuivi] = useState(false);
+
+  // Fermer les dialogs avant navigation pour éviter les erreurs Radix
+  const navigateSafe = (path: string) => {
+    setOpenSuivi(false);
+    setTimeout(() => navigate(path), 50);
+  };
   const [suiviForm, setSuiviForm] = useState({ avancement: "", actionsRealisees: "", prochainesEtapes: "", pointsBlockage: "" });
 
   const { data: client, isLoading, refetch } = trpc.clients.getById.useQuery({ id: clientId });
@@ -90,7 +96,7 @@ export default function ClientDetail() {
       <div className="p-6 space-y-6">
         {/* Navigation */}
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="gap-1.5 text-muted-foreground hover:text-foreground">
+          <Button variant="ghost" size="sm" onClick={() => navigateSafe("/")} className="gap-1.5 text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" /> Tableau de bord
           </Button>
         </div>
@@ -132,7 +138,7 @@ export default function ClientDetail() {
                 <SelectItem value="clos">Clos</SelectItem>
               </SelectContent>
             </Select>
-            <Button size="sm" className="gap-1.5" onClick={() => navigate(`/clients/${clientId}/entretien`)}>
+            <Button size="sm" className="gap-1.5" onClick={() => navigateSafe(`/clients/${clientId}/entretien`)}>
               <Plus className="h-4 w-4" /> Nouvel entretien
             </Button>
           </div>
@@ -166,7 +172,7 @@ export default function ClientDetail() {
                 <CardContent className="py-10 text-center">
                   <FileText className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
                   <p className="text-muted-foreground text-sm">Aucun dossier. Démarrez un entretien.</p>
-                  <Button className="mt-4 gap-2" onClick={() => navigate(`/clients/${clientId}/entretien`)}>
+                  <Button className="mt-4 gap-2" onClick={() => navigateSafe(`/clients/${clientId}/entretien`)}>
                     <Plus className="h-4 w-4" /> Démarrer l'entretien
                   </Button>
                 </CardContent>
@@ -174,7 +180,7 @@ export default function ClientDetail() {
             ) : (
               dossiers.map((d) => (
                 <Card key={d.id} className="cursor-pointer hover:shadow-md transition-shadow border-border"
-                  onClick={() => navigate(`/dossiers/${d.id}`)}>
+                  onClick={() => navigateSafe(`/dossiers/${d.id}`)}>
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${d.type === "diagnostic" ? "bg-purple-100" : "bg-blue-100"}`}>

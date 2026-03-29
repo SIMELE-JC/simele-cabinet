@@ -21,6 +21,11 @@ export default function NouvelEntretien() {
   const clientId = parseInt(params.clientId ?? "0");
   const [, navigate] = useLocation();
 
+  // Fermer les dialogs avant navigation pour éviter les erreurs Radix
+  const navigateSafe = (path: string) => {
+    setTimeout(() => navigate(path), 50);
+  };
+
   const [dossierId, setDossierId] = useState<number | null>(null);
   const [typeEntretien, setTypeEntretien] = useState<"entretien_initial" | "diagnostic">("entretien_initial");
   const [notes, setNotes] = useState("");
@@ -33,7 +38,7 @@ export default function NouvelEntretien() {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const { data: client } = trpc.clients.getById.useQuery({ id: clientId });
-  const { data: messages = [], refetch: refetchMessages } = trpc.chat.getMessages.useQuery(
+  const { data: messages = [] } = trpc.chat.getMessages.useQuery(
     { dossierId: dossierId ?? 0 },
     { enabled: !!dossierId }
   );
@@ -70,7 +75,7 @@ export default function NouvelEntretien() {
     onError: (err) => { setIsTranscribing(false); toast.error(`Erreur transcription : ${err.message}`); },
   });
 
-  // Créer le dossier au montage
+  // Créer le dossier au montage (une seule fois)
   useEffect(() => {
     if (clientId && !dossierId) {
       createDossierMutation.mutate({
@@ -79,7 +84,7 @@ export default function NouvelEntretien() {
         titre: typeEntretien === "entretien_initial" ? "Entretien initial" : "Diagnostic projet",
       });
     }
-  }, [clientId]);
+  }, [clientId, dossierId]);
 
   // Scroll chat
   useEffect(() => {
@@ -141,7 +146,7 @@ export default function NouvelEntretien() {
         {/* Navigation */}
         <div className="flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate(`/clients/${clientId}`)} className="gap-1.5 text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="sm" onClick={() => navigateSafe(`/clients/${clientId}`)} className="gap-1.5 text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-4 w-4" />
               {client ? `${client.prenom ?? ""} ${client.nom}`.trim() : "Retour"}
             </Button>
